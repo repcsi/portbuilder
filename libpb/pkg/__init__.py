@@ -7,7 +7,7 @@ from __future__ import absolute_import
 import subprocess
 
 from libpb import env, make
-from . import pkg, pkgng
+from . import pkgng
 
 # Installed status flags
 ABSENT  = 0
@@ -18,7 +18,6 @@ NEWER   = 3
 __all__ = ["add", "change", "db", "query", "remove", "version"]
 
 mgmt = {
-        "pkg":   pkg,
         "pkgng": pkgng,
     }
 

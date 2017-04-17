@@ -167,7 +167,7 @@ class Attr(signal.Signal):
         # TODO: if pmake.wait() != make.SUCCESS
         if pmake.wait() != 0:
             log.error("Attr.parse_attr()",
-                      "Failed to get port %s attributes (err=%s)\n%s" %
+                      "Failed to get port %s attributes (err=%s) %s" %
                           (self.origin, pmake.returncode,
                            "".join(pmake.stderr.readlines())))
             self.emit(self.origin, None)
@@ -314,12 +314,16 @@ def strip_depends(depends):
     """Remove $PORTSDIR from dependency paths."""
     for depend in depends:
         if depend.find(':') == -1:
-            raise RuntimeError("bad dependency line: '%s'" % depend)
+            raise RuntimeError("bad dependency line (ending with colon): '%s'" % depend)
         obj, port = depend.split(':', 1)
+        log.simplylog("Obj: "+obj)
+        log.simplylog("port: "+port)
+        log.simplylog("PORTSDIR: "+env.env["PORTSDIR"])
         if port.startswith(env.env["PORTSDIR"]):
-            port = port[len(env.env["PORTSDIR"]) + 1:]
-        else:
-            raise RuntimeError("bad dependency line: '%s'" % depend)
+            port = port.replace(env.env["PORTSDIR"],"",1)
+            log.simplylog("PORTSDIR removed from dependency port name new name: "+port)
+        # else:
+        #     raise RuntimeError("bad dependency line (unknown error): '%s'" % depend)
         yield obj, port
 ports_attr["depend_build"].extend((strip_depends, tuple))
 ports_attr["depend_extract"].extend((strip_depends, tuple))

@@ -16,8 +16,9 @@ PKG_CACHEDIR = "/var/cache/pkg"
 
 env = {}
 master = {
-  "PORTSDIR"     : PORTSDIR,     # Ports directory
-  "PKG_CACHEDIR" : PKG_CACHEDIR  # Local cache of remote repositories
+  "PORTSDIR"     : PORTSDIR,      # Ports directory
+  "PKG_CACHEDIR" : PKG_CACHEDIR,  # Local cache of remote repositories
+  "NUMBER_OF_CPUS" : CPUS         # Number of CPUs
 }
 
 ###############################################################################
@@ -84,7 +85,7 @@ master = {
 CONFIG   = ("none", "changed", "newer", "all")
 METHOD   = ("build", "package", "repo")
 MODE     = ("install", "recursive", "clean")
-PKG_MGMT = ("pkg", "pkgng")
+PKG_MGMT = ("pkgng")
 STAGE    = (0, 1, 2, 3)
 TARGET   = ("clean", "install", "package")
 flags = {
@@ -99,6 +100,7 @@ flags = {
   "mode"        : "install",            # Mode of operation
   "no_op"       : False,                # Do nothing
   "no_op_print" : False,                # Print commands instead of execution
-  "pkg_mgmt"    : "pkg",                # The package system used ('pkg(ng)?')
-  "target"      : ["install", "clean"]  # Dependency target (aka DEPENDS_TARGET)
+  "pkg_mgmt"    : "pkgng",              # The package system used ('pkg(ng)?')
+  "target"      : ["install", "clean"], # Dependency target (aka DEPENDS_TARGET)
+  "cleanlog"    : False                  # Clean the log at start for debug purposes
 }

@@ -93,13 +93,13 @@ post_release() {
 
   echo "5.2) Merge branch into develop:"
   git checkout $DEVELOP_BRANCH
-  git merge --no-ff --no-commit $BRANCH
+  git merge --no-ff --no-commit $BRANCH || NOMERGE=yes
 
   echo "5.2.1) Add entry for next release in ChangeLog"
   (echo "X.Y.Z - YYYY MMM DD:"; echo; cat ChangeLog) > /tmp/portbuilder-ChangeLog-$TAG
   mv /tmp/portbuilder-ChangeLog-$TAG ChangeLog
   git add ChangeLog
-  if git commit --no-edit
+  if [ -z "$NOMERGE" ] && git commit --no-edit
   then
     git branch -d $BRANCH
   else
@@ -122,9 +122,13 @@ versioning() {
   git add portbuilder
 
   echo "3.1.3) Update version in ./port/Makefile (and remove ./port/distinfo)"
-  sed -i '' -e "s/$OLD_TAG/$TAG/g" port/Makefile
+  sed -i '' -e "s/$OLD_TAG/$TAG/g" -e '/^PORTREVISION/d' port/Makefile
   rm port/distinfo
   git add port/Makefile
+  if [ -d port/files ]
+  then
+    git rm -r port/files
+  fi
 
   echo "3.1.4) Update version in ./ChangeLog"
   sed -i '' -e "s/X.Y.Z/$TAG/" -e "s/YYYY MMM DD/`date '+%Y %B %d'`/" ChangeLog

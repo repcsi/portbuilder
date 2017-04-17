@@ -54,6 +54,11 @@ def debug(func, msg):
         with open(logfile(), "a") as log:
             log.write(msg)
 
+def simplylog(msg):
+    msg = "[%11.4f] (L) Simply> %s\n" % (offset_time(), msg)
+    with open(logfile(), "a") as log:
+        log.write(msg)
+
 
 def error(func, msg, trace=False):
     """Report an error to the general logfile"""

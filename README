@@ -10,6 +10,13 @@ Some of it's key features:
  * Top like UI
  * Persistent builds (by default)
 
+BUGS
+----
+If you find any bugs let me know:
+repcsike@gmail.com
+(logs may help as well)
+Thanks!
+Balazs alias Repcsi
 
 REQUIREMENTS
 ------------
@@ -64,7 +71,6 @@ Options:
                         installed/packaged.
   -p, --package         Create packages for specified ports.
   -P, --package-all     Create packages for all installed ports
-  --pkgng               Use pkgng as the package manager.
   --preclean            Pre-clean before building a port
   --profile=PROFILE     Produce a profile of a run saved to file PROFILE
   -u, --upgrade         Upgrade specified ports.
