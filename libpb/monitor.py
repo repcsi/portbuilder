@@ -4,19 +4,9 @@ from __future__ import absolute_import
 
 import abc
 import collections
+import curses, curses.ascii
 import sys
 import time
-
-try:
-    import _curses
-except ImportError:
-    try:
-        import _minimal_curses as _curses
-        sys.modules["_curses"] = _curses
-        del _curses
-    except ImportError:
-        pass
-import curses, curses.ascii
 
 from libpb import env, event, queue, stacks
 
@@ -239,7 +229,7 @@ class Top(Monitor):
         """Update the ports details."""
         from .port import ports
 
-        msg = "Port count: %i" % ports()
+        msg = "CPU Count: %i Port count: %i" % (env.env["NUMBER_OF_CPUS"], ports())
         if len(queue.attr):
             if len(queue.attr.queue):
                 msg += "; retrieving %i (of %i)" % (len(queue.attr.active),

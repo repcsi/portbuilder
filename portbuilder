@@ -12,17 +12,16 @@ import sys
 
 from libpb import builder, env, event, log, mk, pkg, queue
 
-VAR_NAME = "^[a-zA-Z_][a-zA-Z0-9_-]*$"
+VAR_NAME = "^[a-zA-Z_][a-zA-Z0-9_]*$"
 
 
 class PortDelegate(object):
     """Choose if a port should be build and with which builder."""
 
-    def __init__(self, package, upgrade, force):
+    def __init__(self, package, upgrade):
         """Initialise port delegate."""
         self.package = package
         self.upgrade = upgrade
-        self.force = force
 
     def __call__(self, port):
         """Add a port to the required builder."""
@@ -33,8 +32,6 @@ class PortDelegate(object):
             port.flags.add("upgrade")
         if self.package:
             port.flags.add("package")
-        if self.force:
-            port.dependent.status = port.dependent.UNRESOLV
         if env.flags["mode"] == "recursive" or not port.resolved():
             builder.depend_resolve(port)
 
@@ -61,27 +58,32 @@ def main():
     from libpb.monitor import Top
     from libpb.port import get_port
 
+    # Make sure log_dir is available
+    mkdir(flags["log_dir"])
+    # Clean the log if flag-cleanlog is set:
+    if flags['cleanlog'] and os.path.isfile(log.logfile()):
+        os.remove(log.logfile())
+    log.debug("portbuilder.main()", "STARTING Portbuilder session!")
     # Process arguments
     parser = gen_parser()
     options, args = parser.parse_args()
     options.args = args
     options.parser = parser
+    log.debug("portbuilder.main()", "Options given: %s" % (options))
+    log.debug("portbuilder.main()", "Flags given: %s" % (flags))
+    log.debug("portbuilder.main()", "Arguments given: %s " % (args))
     set_early_options(options)
     if len(options.args) == 0 and not options.all and not options.ports_file:
         print parser.get_usage()
+        log.debug("portbuilder.main()", "ENDING Portbuilder session! Usage printed! :) ")
         return
-    # Make sure log_dir is available
-    mkdir(flags["log_dir"])
-
-    # Initialise libpb
     sys.stderr.write("Bootstrapping /etc/make.conf (defaults)...")
     mk.bootstrap_master()
     sys.stderr.write("done\n")
-    sys.stderr.write("Loading bsd.port.mk (state variables)...")
+    sys.stderr.write("Loading bsd.ports.mk (defaults)...")
     mk.load_defaults()
-    mk.clean()
     sys.stderr.write("done\n")
-    sys.stderr.write("Loading package datebase...")
+    sys.stderr.write("Loading package database...")
     pkg.db.load()
     sys.stderr.write("done\n")
     set_options(options)
@@ -89,6 +91,10 @@ def main():
         sys.stderr.write("Loading repository database...")
         pkg.repo_db.load()
         sys.stderr.write("done\n")
+    sys.stderr.write("Caching variables...")
+    mk.clean()
+    mk.cache()
+    sys.stderr.write("done\n")
 
     # Install signal handlers
     signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -97,19 +103,25 @@ def main():
     event.event(signal.SIGTERM, "s").connect(sigterm)
 
     # Port delegate
-    delegate = PortDelegate(options.package, options.upgrade, options.force)
+    #Check here
+    delegate = PortDelegate(options.package, options.upgrade)
 
     # Execute the primary build target
+    #Check here #2
     for port in options.args:
         get_port(port).connect(delegate)
 
     if not flags["no_op_print"]:
+        # log.simplylog("if:1")
         Top().start()
     if options.profile:
+        # log.simplylog("if:2")
         cProfile.runctx("run_loop(options)", globals(),
                         locals(), options.profile)
     else:
+        # log.simplylog("if:3 else")
         run_loop(options)
+    log.debug("portbuilder.main()", "ENDING Portbuilder session!")
 
 
 def mkdir(directory):
@@ -293,7 +305,8 @@ def gen_parser():
                       action="store_true", help="Create packages for all "
                       "installed ports")
 
-    parser.add_option("--pkgng", dest="pkgng", default=False,
+    ### pkgng is the default now!
+    parser.add_option("--pkgng", dest="pkgng", default=True,
                       action="store_true", help="Use pkgng as the package "
                       "manager.")
 
@@ -304,9 +317,6 @@ def gen_parser():
     parser.add_option("--profile", action="store", default=False,
                       type="string", help="Produce a profile of a run saved "
                       "to file PROFILE")
-
-    parser.add_option("--force", action="store_true", default=False,
-                      help="Force (re)installing of port")
 
     parser.add_option("-u", "--upgrade", action="store_true", default=False,
                       help="Upgrade specified ports.")

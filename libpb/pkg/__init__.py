@@ -7,7 +7,7 @@ from __future__ import absolute_import
 import subprocess
 
 from libpb import env, make
-from . import pkg, pkgng
+from . import pkgng
 
 # Installed status flags
 ABSENT  = 0
@@ -18,7 +18,6 @@ NEWER   = 3
 __all__ = ["add", "change", "db", "query", "remove", "version"]
 
 mgmt = {
-        "pkg":   pkg,
         "pkgng": pkgng,
     }
 
@@ -50,10 +49,7 @@ def info(repo=False):
     for pkg_port in pkg_info.communicate()[0].split('\n'):
         if not pkg_port:
             continue
-        try:
-            pkgname, origin = pkg_port.rsplit(':', 1)
-        except ValueError:
-            continue
+        pkgname, origin = pkg_port.split(':')
         origin = origin.strip()
         if origin in pkgdb:
             pkgdb[origin].add(pkgname)
@@ -93,8 +89,8 @@ def cmd(port, args, do_op=False):
 
 def version(old, new):
     """Compare two package names and indicates the difference."""
-    old = old.rsplit('-', 1)[-1]  # Name and version components of the old pkg
-    new = new.rsplit('-', 1)[-1]  # Name and version components of the new pkg
+    old = old.rsplit('-', 1)[1]  # Name and version components of the old pkg
+    new = new.rsplit('-', 1)[1]  # Name and version components of the new pkg
 
     if old == new:
         # The packages are the same
